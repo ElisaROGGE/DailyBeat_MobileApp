@@ -1,74 +1,114 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { Audio } from 'expo-av';
+import { useNavigation } from '@react-navigation/native';
+import Navbar from '@/components/Navbar';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const Home = () => {
+  const [selectedMusic, setSelectedMusic] = useState<any>(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const navigation = useNavigation();
 
-export default function HomeScreen() {
+  // Gestion du son avec expo-av
+  const playSound = async () => {
+    if (!selectedMusic?.preview_url) return;
+
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: selectedMusic.preview_url },
+      { shouldPlay: true }
+    );
+    setSound(sound);
+  };
+
+  useEffect(() => {
+    return sound ? () => sound.unloadAsync() : undefined;
+  }, [sound]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+    <View style={styles.container}>
+      <Navbar />
+      <Text style={styles.title}>Musique du Jour</Text>
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+      {selectedMusic ? (
+        <View style={styles.musicCard}>
+          <Image
+            source={{ uri: selectedMusic.album.images[0]?.url }}
+            style={styles.image}
+          />
+          <Text style={styles.songTitle}>
+            {selectedMusic.name} - {selectedMusic.artists[0]?.name}
+          </Text>
+
+          {selectedMusic.preview_url ? (
+            <TouchableOpacity style={styles.button} onPress={playSound}>
+              <Text style={styles.buttonText}>Écouter un extrait</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text>Aucun extrait disponible pour cette piste.</Text>
+          )}
+        </View>
+      ) : (
+        <Text>Aucune musique sélectionnée pour aujourd'hui.</Text>
+      )}
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Beat')}
+      >
+        <Text style={styles.buttonText}>Add my daily beat</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// 🎨 Styles pour l'interface
+const styles = {
+  container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    backgroundColor: '#1e1e1e',
+    padding: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  musicCard: {
+    backgroundColor: '#333',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    width: 300,
   },
-});
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  songTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 15,
+    backgroundColor: '#1db954',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+};
+
+export default Home;
