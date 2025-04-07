@@ -5,19 +5,50 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
+import { exchangeCodeForToken } from "../utils/exchangeCodeForToken";
 
-const SCOPES = "user-read-email user-read-private";
-const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${
-  process.env.EXPO_PUBLIC_TEST_SPOTIFY_CLIENT_ID
-}&response_type=code&redirect_uri=${encodeURIComponent(
-  process.env.EXPO_PUBLIC_TEST_SPOTIFY_REDIRECT_URI
-)}&scope=${encodeURIComponent(SCOPES)}`;
+WebBrowser.maybeCompleteAuthSession();
+const discovery = {
+  authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+  tokenEndpoint: 'https://accounts.spotify.com/api/token',
+};
+
+const clientId = process.env.EXPO_PUBLIC_TEST_SPOTIFY_CLIENT_ID || '';
+const scopes = [
+  'user-read-email',
+  'user-read-private',
+  'playlist-read-private',
+];
+
 
 export default function ProfileScreen() {
+
+  const redirectUri = AuthSession.makeRedirectUri({});
+  console.log('redirect', redirectUri)
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId,
+      scopes,
+      redirectUri,
+      responseType: 'code',
+      usePKCE: true,
+    },
+    discovery
+  );
+  const codeVerifier = request?.codeVerifier;
+  
   const router = useRouter();
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const code = response.params.code;
+      exchangeCodeForToken(code, codeVerifier);
+    }
+  }, [response]);
 
   return (
     <View style={styles.container}>
@@ -28,10 +59,22 @@ export default function ProfileScreen() {
       <Text style={styles.title}>Profil</Text>
 
       <TouchableOpacity
-        onPress={() => router.replace("auth/register")}
+        onPress={() => router.push("/auth/register")}
         style={styles.button}
       >
         <Text style={styles.buttonText}>S'inscrire</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push("/auth/login")}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Se connecter</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => promptAsync()}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Se connecter avec Spotify</Text>
       </TouchableOpacity>
     </View>
   );

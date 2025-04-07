@@ -21,7 +21,7 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     try {
-      // Créer un utilisateur dans Firebase Auth
+      // Create a user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -30,10 +30,11 @@ export default function RegisterScreen() {
       const userId = userCredential.user.uid;
       console.log(userId, "userId")
 
-      // Stocker l'utilisateur dans Firestore
+      // Store user in Firestore
       await setDoc(doc(firestore, "users", userId), {
         username: username,
         email: email,
+        spotify_id: null,
         createdAt: new Date(),
       });
 
