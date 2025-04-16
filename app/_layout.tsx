@@ -1,6 +1,7 @@
 import { router, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { auth } from "../firebaseConfig";
+import { SpotifyTokenProvider } from "./SpotifyTokenContext";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -14,8 +15,10 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <SpotifyTokenProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </SpotifyTokenProvider>
   );
 }

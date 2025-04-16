@@ -9,7 +9,7 @@ import {
 import { useRouter } from "expo-router";
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
-import { exchangeCodeForToken } from "../utils/exchangeCodeForToken";
+import { exchangeCodeForTokenAndUpdateFirestore } from "../utils/exchangeCodeForToken";
 
 WebBrowser.maybeCompleteAuthSession();
 const discovery = {
@@ -27,7 +27,7 @@ const scopes = [
 
 export default function ProfileScreen() {
 
-  const redirectUri = AuthSession.makeRedirectUri({});
+  const redirectUri = process.env.EXPO_PUBLIC_TEST_SPOTIFY_REDIRECT_URI || 'exp://192.168.1.16:8081';
   console.log('redirect', redirectUri)
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
@@ -46,7 +46,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (response?.type === 'success') {
       const code = response.params.code;
-      exchangeCodeForToken(code, codeVerifier);
+      if (codeVerifier) {
+        exchangeCodeForTokenAndUpdateFirestore(code, codeVerifier);
+      } else {
+        console.error("Code verifier is undefined");
+      }
     }
   }, [response]);
 
