@@ -1,4 +1,4 @@
-export const fetchData = async (endPoint: string, method: string = 'GET', body?: any, token?: string) => {
+const fetchData = async (endPoint: string, method: string = 'GET', body?: any, token?: string) => {
     try {
       const options: RequestInit = {
         method,
@@ -24,3 +24,5 @@ export const fetchData = async (endPoint: string, method: string = 'GET', body?:
       console.log(error);
     }
   };
+
+  export default fetchData;

@@ -4,7 +4,7 @@ import { getAuth } from 'firebase/auth';
 const db = getFirestore();
 const auth = getAuth();
 
-export async function storeSpotifyTokenToUser(accessToken: string) {
+async function storeSpotifyTokenToUser(accessToken: string) {
   const user = auth.currentUser;
 
   if (!user) {
@@ -17,3 +17,5 @@ export async function storeSpotifyTokenToUser(accessToken: string) {
     spotifyAccessToken: accessToken,
   }, { merge: true });
 }
+
+export default storeSpotifyTokenToUser;

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { TextInput, Button, Card, Title, ActivityIndicator } from "react-native-paper";
-import { browserSessionPersistence, setPersistence, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
 import { router } from "expo-router";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as spotifyService from '../../services/spotify';
 
-const getSpotifyToken = async (uid) => {
+const getSpotifyToken = async (uid: string) => {
   const db = getFirestore();
   const userRef = doc(db, "users", uid);
   const userDoc = await getDoc(userRef);
 
   if (userDoc.exists()) {
     const userData = userDoc.data();
+    console.log("Données de l'utilisateur :", userData);
     return {
       accessToken: userData.spotifyAccessToken,
       refreshToken: userData.spotifyRefreshToken,
@@ -39,11 +40,14 @@ export default function LoginScreen() {
       // Connexion de l'utilisateur
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Utilisateur connecté :", userCredential);
+      await AsyncStorage.setItem("userLoggedIn", "true");
+
   
       const spotifyTokens = await getSpotifyToken(userCredential.user.uid);
   
       if (spotifyTokens) {
         const { accessToken, refreshToken, expiresAt } = spotifyTokens;
+        console.log("Tokens Spotify récupérés :", spotifyTokens);
   
         // check if the token is still valid
         if (new Date().getTime() < expiresAt) {
@@ -55,7 +59,7 @@ export default function LoginScreen() {
         } else {
           console.log("Token Spotify expiré, besoin de rafraîchir.");
           // refresh the token
-          await spotifyService.refreshToken(refreshToken).then(async (newTokens) => {
+          await spotifyService.refreshToken(userCredential.user.uid).then(async (newTokens) => {
             console.log("Nouveaux tokens Spotify :", newTokens);
             await AsyncStorage.setItem("spotify_access_token", newTokens.accessToken);
             await AsyncStorage.setItem("spotify_refresh_token", newTokens.refreshToken);

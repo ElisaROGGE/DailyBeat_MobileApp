@@ -30,7 +30,7 @@ export const SpotifyTokenProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const userId = user.uid;
       fetchSpotifyToken(userId);
     } else {
-      console.log('Aucun utilisateur connecté');
+      console.log('Aucun utilisateur connecté spotify handler');
     }
   }, []);
 

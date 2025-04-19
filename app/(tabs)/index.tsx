@@ -3,10 +3,13 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import Navbar from '@/components/Navbar';
+import AddMusicModal from '@/components/AddMusicModal';
+import * as musicService from '@/services/music';
 
 const Home = () => {
   const [selectedMusic, setSelectedMusic] = useState<any>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
 
   // Gestion du son avec expo-av
@@ -18,6 +21,12 @@ const Home = () => {
       { shouldPlay: true }
     );
     setSound(sound);
+  };
+
+  const handleAddMusic = (music: any) => {
+    musicService.addMusicOfTheDay(music);
+    setSelectedMusic(music);
+    setModalVisible(false);
   };
 
   useEffect(() => {
@@ -53,10 +62,15 @@ const Home = () => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Beat')}
+        onPress={() => setModalVisible(true)}
       >
         <Text style={styles.buttonText}>Add my daily beat</Text>
       </TouchableOpacity>
+      <AddMusicModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onAddMusic={handleAddMusic}
+      />
     </View>
   );
 };

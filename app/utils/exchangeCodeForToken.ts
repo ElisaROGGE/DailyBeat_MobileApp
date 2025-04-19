@@ -1,7 +1,7 @@
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
 
-export const exchangeCodeForTokenAndUpdateFirestore = async (code: string, codeVerifier: string) => {
+const exchangeCodeForTokenAndUpdateFirestore = async (code: string, codeVerifier: string) => {
   const creds = `${process.env.EXPO_PUBLIC_TEST_SPOTIFY_CLIENT_ID}:${process.env.EXPO_PUBLIC_TEST_SPOTIFY_CLIENT_SECRET}`;
   const encodedCreds = btoa(creds);
 
@@ -45,3 +45,5 @@ export const exchangeCodeForTokenAndUpdateFirestore = async (code: string, codeV
     console.log('User is not authenticated');
   }
 };
+
+export default exchangeCodeForTokenAndUpdateFirestore;
